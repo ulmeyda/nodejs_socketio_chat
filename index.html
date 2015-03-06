@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>チャットテスト</title>
+<script type="text/javascript" src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+$(function() {
+    "use strict";
+
+    var socket = io.connect('http://' + location.host + '/');
+
+    socket.on('connect', function() {
+        $('#js-messages').prepend('入室しました。');
+    });
+
+    socket.on("disconnect", function (client) {
+        $('#js-messages').prepend('退室しました。');
+    });
+
+    socket.on('receive', function(data) {
+        $('#js-messages').prepend($('<p/>').text(data.value));
+    });
+
+    $('#js-btn-all').on('click', function(e) {
+        var text = $('#js-input').val();
+        if (!text) return;
+        
+        socket.emit('send_message', {value: text});
+        $('#js-input').val('');
+    });
+
+    $('#js-btn-other').on('click', function(e) {
+        var text = $('#js-input').val();
+        if (!text) return;
+        
+        socket.emit('send_broadcast', {value: text});
+        $('#js-input').val('');
+    });
+
+    $('#js-btn-bye').on('click', function(e) {
+        socket.disconnect();
+    });
+});
+</script>
+</head>
+<body>
+    <h1>チャットテスト</h1>
+    <form>
+        <input type="text" id="js-input" name="message">
+        <input id="js-btn-all" type="button" value="全体送信">
+        <input id="js-btn-other" type="button" value="自分以外送信">
+        <input id="js-btn-bye" type="button" value="退室">
+        <div id="js-messages"></div>
+    </form>
+</body>
+</html>
